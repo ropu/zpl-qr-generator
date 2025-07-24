@@ -1,52 +1,28 @@
-﻿Nombre completo de la ubicación;Código de barras
-Aisle-01/Rack-01;Aisle-01/Rack-01
+Nombre completo de la ubicación;Código de barras
 Aisle-01/Rack-01/S1;Aisle-01/Rack-01/S1
 Aisle-01/Rack-01/S2;Aisle-01/Rack-01/S2
 Aisle-01/Rack-01/S3;Aisle-01/Rack-01/S3
-Aisle-01/Rack-02;Aisle-01/Rack-02
 Aisle-01/Rack-02/S1;Aisle-01/Rack-02/S1
 Aisle-01/Rack-02/S2;Aisle-01/Rack-02/S2
 Aisle-01/Rack-02/S3;Aisle-01/Rack-02/S3
-Aisle-01/Rack-03;Aisle-01/Rack-03
 Aisle-01/Rack-03/S1;Aisle-01/Rack-03/S1
 Aisle-01/Rack-03/S2;Aisle-01/Rack-03/S2
 Aisle-01/Rack-03/S3;Aisle-01/Rack-03/S3
-Aisle-01/Rack-04;Aisle-01/Rack-04
 Aisle-01/Rack-04/S1;Aisle-01/Rack-04/S1
 Aisle-01/Rack-04/S2;Aisle-01/Rack-04/S2
 Aisle-01/Rack-04/S3;Aisle-01/Rack-04/S3
-Aisle-01/Rack-05;Aisle-01/Rack-05
 Aisle-01/Rack-05/S1;Aisle-01/Rack-05/S1
 Aisle-01/Rack-05/S2;Aisle-01/Rack-05/S2
 Aisle-01/Rack-05/S3;Aisle-01/Rack-05/S3
-Aisle-01/Rack-06;Aisle-01/Rack-06
 Aisle-01/Rack-06/S1;Aisle-01/Rack-06/S1
 Aisle-01/Rack-06/S2;Aisle-01/Rack-06/S2
 Aisle-01/Rack-06/S3;Aisle-01/Rack-06/S3
-Aisle-01/Rack-07;Aisle-01/Rack-07
 Aisle-01/Rack-07/S1;Aisle-01/Rack-07/S1
 Aisle-01/Rack-07/S2;Aisle-01/Rack-07/S2
 Aisle-01/Rack-07/S3;Aisle-01/Rack-07/S3
-Aisle-01/Rack-08;Aisle-01/Rack-08
 Aisle-01/Rack-08/S1;Aisle-01/Rack-08/S1
 Aisle-01/Rack-08/S2;Aisle-01/Rack-08/S2
 Aisle-01/Rack-08/S3;Aisle-01/Rack-08/S3
-FD/En Produccion/A Almacenar;Prod-AALMA
-FD/En Produccion/Frente Lineas;Prod-PLA
-FD/En Produccion/Piso Fabrica;Prod/Piso-Fabrica
-FD/En Produccion/Rack MasterBatch;Prod/Rack-MB
 FD/En Produccion/Turno Mañana;Prod-TM
 FD/En Produccion/Turno Noche;Prod-TN
 FD/En Produccion/Turno Tarde;Prod-TT
-FD/Input;WHINPUT
-FD/Output;WHOUTPUT
-FD/Stock;FD/Stock
-FD/Stock/Filamax;S-FMA
-FD/Stock/Filanova;S-FNO
-FD/Stock/Otros;S-Other
-FD/Stock/PLA;S-PLA
-FD/Stock/Packing Zone;WHPACKING
-FD/Stock/Picking Zone;WHPICKING
-FD/Stock/Piso Derecha;S-Der
-FD/Stock/Piso Izquierda;S-Izq
-FD/Stock/Scrap;S-CRAP

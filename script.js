@@ -126,6 +126,7 @@ const csvPreview = document.getElementById('csvPreview');
 const generateCsvBtn = document.getElementById('generateCsvBtn');
 
 // Elementos de configuración del PDF
+const pdfOrientation = document.getElementById('pdfOrientation');
 const pdfRows = document.getElementById('pdfRows');
 const pdfCols = document.getElementById('pdfCols');
 const layoutInfo = document.getElementById('layoutInfo');
@@ -178,6 +179,7 @@ function setupEventListeners() {
     generateCsvBtn.addEventListener('click', generateFromCsv);
 
     // Event listeners para configuración del PDF
+    pdfOrientation.addEventListener('input', updateLayoutInfo);
     pdfRows.addEventListener('input', updateLayoutInfo);
     pdfCols.addEventListener('input', updateLayoutInfo);
     
@@ -221,11 +223,13 @@ function updateSizeInfo() {
 }
 
 function updateLayoutInfo() {
+    const orientation = pdfOrientation.value;
     const cols = parseInt(pdfCols.value);
     const rows = parseInt(pdfRows.value);
     const totalLabels = cols * rows;
     
-    layoutInfo.textContent = `Formato: ${cols}×${rows} (${totalLabels} etiqueta${totalLabels > 1 ? 's' : ''} por página)`;
+    const orientationText = orientation === 'portrait' ? 'Vertical' : 'Horizontal';
+    layoutInfo.textContent = `Formato: ${cols}×${rows} (${totalLabels} etiqueta${totalLabels > 1 ? 's' : ''} por página) - ${orientationText}`;
 }
 
 function updateCharCounter() {
@@ -579,9 +583,12 @@ function generatePdfReport() {
                 console.log('QRCode está disponible y listo para usar');
             }
         
-        // Crear documento con tamaño de página 100x150mm
+        // Obtener orientación seleccionada
+        const orientation = pdfOrientation.value;
+        
+        // Crear documento con orientación seleccionada
         const doc = new jsPDF({
-            orientation: 'portrait',
+            orientation: orientation,
             unit: 'mm',
             format: [100, 150]
         });
@@ -624,7 +631,7 @@ async function generatePdfContent(doc) {
     const rowsPerPage = parseInt(pdfRows.value);
     const labelsPerPage = colsPerPage * rowsPerPage;
     
-    console.log(`Configuración PDF: ${colsPerPage}×${rowsPerPage} = ${labelsPerPage} etiquetas por página`);
+    console.log(`Configuración PDF: ${colsPerPage}×${rowsPerPage} = ${labelsPerPage} etiquetas por página - Orientación: ${orientation}`);
 
     // Calcular dimensiones de cada etiqueta en la página
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -734,7 +741,7 @@ async function generatePdfContent(doc) {
     let filename = 'etiquetas.pdf';
     if (csvData && csvFileName.textContent) {
         const csvName = csvFileName.textContent.replace('.csv', '');
-        filename = `etiquetas_${csvName}_${labelsData.length}_elementos_${colsPerPage}x${rowsPerPage}.pdf`;
+        filename = `etiquetas_${csvName}_${labelsData.length}_elementos_${colsPerPage}x${rowsPerPage}_${orientation}.pdf`;
     } else {
         const text = textInput.value.trim();
         const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -743,9 +750,9 @@ async function generatePdfContent(doc) {
                 .replace(/[^a-zA-Z0-9\s]/g, '')
                 .replace(/\s+/g, '_')
                 .substring(0, 20);
-            filename = `etiqueta_${sanitizedText}_${colsPerPage}x${rowsPerPage}.pdf`;
+            filename = `etiqueta_${sanitizedText}_${colsPerPage}x${rowsPerPage}_${orientation}.pdf`;
         } else {
-            filename = `etiquetas_${lines.length}_elementos_${colsPerPage}x${rowsPerPage}.pdf`;
+            filename = `etiquetas_${lines.length}_elementos_${colsPerPage}x${rowsPerPage}_${orientation}.pdf`;
         }
     }
 
