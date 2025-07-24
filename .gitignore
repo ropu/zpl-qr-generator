@@ -36,5 +36,5 @@ build/
 .env.test.local
 .env.production.local
 
-# Archivos de datos de ejemplo (opcional)
-# *.csv 
+# Archivos de datos de ejemplo
+*.csv 
