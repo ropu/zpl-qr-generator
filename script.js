@@ -638,9 +638,8 @@ async function generatePdfContent(doc) {
     // Calcular dimensiones del texto y QR para cada etiqueta
     const textHeight = labelHeight * 0.2; // 20% para texto
     const qrSize = Math.min(labelWidth * 0.6, labelHeight * 0.6); // 60% del lado más pequeño
-    const textFontSize = Math.max(8, Math.min(16, textHeight * 0.4)); // Tamaño de fuente adaptativo
     
-    console.log(`Dimensiones internas - Texto: ${textHeight}mm, QR: ${qrSize}×${qrSize}mm, Fuente: ${textFontSize}pt`);
+    console.log(`Dimensiones internas - Texto: ${textHeight}mm, QR: ${qrSize}×${qrSize}mm`);
 
     // Generar páginas
     for (let pageIndex = 0; pageIndex < Math.ceil(labelsData.length / labelsPerPage); pageIndex++) {
@@ -670,13 +669,18 @@ async function generatePdfContent(doc) {
                 qrValue: `"${labelData.qrValue}"`
             });
             
+            // Calcular tamaño de fuente óptimo para este texto específico
+            const optimalFontSize = calculateOptimalFontSize(labelData.text, labelWidth, textHeight, doc);
+            
             // Texto centrado en la parte superior de la etiqueta
-            doc.setFontSize(textFontSize);
+            doc.setFontSize(optimalFontSize);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(0, 0, 0);
             const textX = labelX + (labelWidth / 2);
             const textY = labelY + (textHeight / 2);
             doc.text(labelData.text, textX, textY, { align: 'center' });
+            
+            console.log(`Etiqueta ${startIndex + i + 1} - Texto: "${labelData.text}" - Tamaño fuente: ${optimalFontSize}pt`);
 
             // Generar QR y agregarlo centrado en la parte inferior
             const qrCanvas = document.createElement('canvas');
@@ -770,6 +774,30 @@ function drawQRPlaceholder(canvas, size, text) {
     ctx.font = '8px Arial';
     const shortText = text.length > 15 ? text.substring(0, 15) + '...' : text;
     ctx.fillText(shortText, size / 2, size - 5);
+}
+
+function calculateOptimalFontSize(text, availableWidth, availableHeight, doc) {
+    // Tamaños de fuente a probar, de mayor a menor
+    const fontSizes = [16, 14, 12, 10, 8, 6, 4];
+    
+    for (const fontSize of fontSizes) {
+        doc.setFontSize(fontSize);
+        doc.setFont('helvetica', 'bold');
+        
+        // Calcular el ancho del texto
+        const textWidth = doc.getTextWidth(text);
+        
+        // Verificar si el texto cabe en el ancho disponible (con margen del 10%)
+        const maxWidth = availableWidth * 0.9;
+        const maxHeight = availableHeight * 0.9;
+        
+        if (textWidth <= maxWidth && fontSize <= maxHeight) {
+            return fontSize;
+        }
+    }
+    
+    // Si no cabe con ningún tamaño, usar el mínimo
+    return 4;
 }
 
 function escapeZplText(text) {
