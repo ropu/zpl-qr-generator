@@ -75,8 +75,8 @@ FD/Stock/Scrap;S-CRAP
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/generador-etiquetas-zpl.git
-cd generador-etiquetas-zpl
+git clone https://github.com/ropu/zpl-qr-generator.git
+cd zpl-qr-generator
 ```
 
 2. Abre `index.html` en tu navegador web
@@ -133,7 +133,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ## 📞 Soporte
 
 Si tienes problemas o preguntas:
-1. Revisa los [Issues](https://github.com/tu-usuario/generador-etiquetas-zpl/issues)
+1. Revisa los [Issues](https://github.com/ropu/zpl-qr-generator/issues)
 2. Crea un nuevo Issue con detalles del problema
 3. Incluye información sobre tu navegador y sistema operativo
 
