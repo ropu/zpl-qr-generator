@@ -312,9 +312,9 @@ function generateZplCode(text) {
 
 ~SD15
 ^LH0,0
-^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\&^FS
+^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\\&^FS
 
-^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedText}\&^FS
+^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedText}\\&^FS
 
 ^XZ`;
 
@@ -495,9 +495,9 @@ function generateZplCodeWithCustomQR(text, qrValue) {
 
 ~SD15
 ^LH0,0
-^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\&^FS
+^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\\&^FS
 
-^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedQrValue}\&^FS
+^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedQrValue}\\&^FS
 
 ^XZ`;
 
