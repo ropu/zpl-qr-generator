@@ -34,47 +34,65 @@ function calculateQRSize(textLength) {
     // El QR debe ser cuadrado, así que usar el lado más pequeño del área disponible
     const maxQRSide = Math.min(qrAreaWidth, qrAreaHeight);
     
-    // Calcular el tamaño base del QR (en dots)
-    // Un QR típico tiene un tamaño mínimo de módulos según la versión
-    const baseQRSize = Math.max(15, Math.floor(maxQRSide / 8)); // 8 dots por módulo QR
+    // Tablas de conversión según la altura de la etiqueta
+    const heightInMm = parseInt(labelHeight.value); // Usar directamente la altura en mm ingresada por el usuario
     
-    // Ajustar según la longitud del texto (más texto = QR más pequeño)
-    let adjustedSize = baseQRSize;
+    let qrSizes;
     
-    if (textLength > 80) {
-        adjustedSize = Math.floor(baseQRSize * 0.6); // 60% del tamaño máximo
-    } else if (textLength > 60) {
-        adjustedSize = Math.floor(baseQRSize * 0.7); // 70% del tamaño máximo
-    } else if (textLength > 40) {
-        adjustedSize = Math.floor(baseQRSize * 0.8); // 80% del tamaño máximo
-    } else if (textLength > 20) {
-        adjustedSize = Math.floor(baseQRSize * 0.9); // 90% del tamaño máximo
-    }
-    
-    // Asegurar que el tamaño esté en el rango válido para ZPL (1-99)
-    const finalSize = Math.max(1, Math.min(99, adjustedSize));
-    
-    // Determinar el nombre del tamaño
-    let sizeName = 'Mediano';
-    if (finalSize >= 30) {
-        sizeName = 'Extra Extra Grande';
-    } else if (finalSize >= 25) {
-        sizeName = 'Extra Grande';
-    } else if (finalSize >= 20) {
-        sizeName = 'Muy Grande';
-    } else if (finalSize >= 15) {
-        sizeName = 'Grande';
-    } else if (finalSize >= 10) {
-        sizeName = 'Mediano';
+    if (heightInMm >= 100) {
+        // Etiquetas altas (100mm+)
+        qrSizes = [
+            { minChars: 0, maxChars: 10, magnification: 35, name: 'Extra Extra Grande' },
+            { minChars: 10, maxChars: 20, magnification: 30, name: 'Extra Grande' },
+            { minChars: 20, maxChars: 30, magnification: 25, name: 'Muy Grande' },
+            { minChars: 30, maxChars: 50, magnification: 20, name: 'Grande' },
+            { minChars: 50, maxChars: 80, magnification: 17, name: 'Mediano' },
+            { minChars: 80, maxChars: 100, magnification: 15, name: 'Pequeño' }
+        ];
+    } else if (heightInMm >= 80) {
+        // Etiquetas medianas (80-99mm)
+        qrSizes = [
+            { minChars: 0, maxChars: 10, magnification: 25, name: 'Extra Extra Grande' },
+            { minChars: 10, maxChars: 20, magnification: 22, name: 'Extra Grande' },
+            { minChars: 20, maxChars: 30, magnification: 20, name: 'Muy Grande' },
+            { minChars: 30, maxChars: 50, magnification: 17, name: 'Grande' },
+            { minChars: 50, maxChars: 80, magnification: 15, name: 'Mediano' },
+            { minChars: 80, maxChars: 100, magnification: 12, name: 'Pequeño' }
+        ];
     } else {
-        sizeName = 'Pequeño';
+        // Etiquetas pequeñas (menos de 80mm)
+        qrSizes = [
+            { minChars: 0, maxChars: 10, magnification: 8, name: 'Extra Extra Grande' },
+            { minChars: 10, maxChars: 20, magnification: 7, name: 'Extra Grande' },
+            { minChars: 20, maxChars: 30, magnification: 6, name: 'Muy Grande' },
+            { minChars: 30, maxChars: 50, magnification: 5, name: 'Grande' },
+            { minChars: 50, maxChars: 80, magnification: 4, name: 'Mediano' },
+            { minChars: 80, maxChars: 100, magnification: 4, name: 'Pequeño' }
+        ];
     }
     
+    // Buscar el rango apropiado según la longitud del texto
+    for (let i = 0; i < qrSizes.length; i++) {
+        const range = qrSizes[i];
+        if (textLength >= range.minChars && textLength < range.maxChars) {
+            return {
+                magnification: range.magnification,
+                name: range.name,
+                calculatedSize: range.magnification,
+                maxPossibleSize: range.magnification,
+                areaWidth: qrAreaWidth,
+                areaHeight: qrAreaHeight
+            };
+        }
+    }
+    
+    // Si no encuentra rango, usar el último (más pequeño)
+    const lastRange = qrSizes[qrSizes.length - 1];
     return {
-        magnification: finalSize,
-        name: sizeName,
-        calculatedSize: finalSize,
-        maxPossibleSize: baseQRSize,
+        magnification: lastRange.magnification,
+        name: lastRange.name,
+        calculatedSize: lastRange.magnification,
+        maxPossibleSize: lastRange.magnification,
         areaWidth: qrAreaWidth,
         areaHeight: qrAreaHeight
     };
@@ -299,9 +317,9 @@ function generateZplCode(text) {
     const textX = LABEL_CONFIG.margin; // Empezar desde el margen izquierdo
     const textY = LABEL_CONFIG.margin;
     
-    // Posición del QR usando el mismo formato que el texto
+    // Posición del QR - usar exactamente el 20% de la altura
     const qrX = LABEL_CONFIG.margin; // Empezar desde el margen izquierdo
-    const qrY = LABEL_CONFIG.textHeight + 60; // Posición vertical en área QR
+    const qrY = LABEL_CONFIG.textHeight; // 20% de la altura (ya calculado en updateLabelConfig)
     
     // Generar código ZPL
     const zplCode = `^XA
@@ -314,7 +332,7 @@ function generateZplCode(text) {
 ^LH0,0
 ^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\\&^FS
 
-^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedText}\\&^FS
+^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedText}^FS
 
 ^XZ`;
 
@@ -482,9 +500,9 @@ function generateZplCodeWithCustomQR(text, qrValue) {
     const textX = LABEL_CONFIG.margin;
     const textY = LABEL_CONFIG.margin;
     
-    // Posición del QR usando el mismo formato que el texto
+    // Posición del QR - usar exactamente el 20% de la altura
     const qrX = LABEL_CONFIG.margin;
-    const qrY = LABEL_CONFIG.textHeight + 60;
+    const qrY = LABEL_CONFIG.textHeight; // 20% de la altura (ya calculado en updateLabelConfig)
     
     // Generar código ZPL
     const zplCode = `^XA
@@ -497,7 +515,7 @@ function generateZplCodeWithCustomQR(text, qrValue) {
 ^LH0,0
 ^FO${textX},${textY}^A0,${LABEL_CONFIG.fontSize},${LABEL_CONFIG.fontSize}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},3,0,C,0^FD${escapedText}\\&^FS
 
-^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedQrValue}\\&^FS
+^FO${qrX},${qrY}^BQN,2,${qrConfig.magnification}^FB${LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2)},1,0,C,0^FDQA,${escapedQrValue}^FS
 
 ^XZ`;
 
