@@ -661,6 +661,11 @@ async function generatePdfContent(doc) {
             const labelX = col * labelWidth;
             const labelY = row * labelHeight;
             
+            // Dibujar recuadro alrededor de la etiqueta
+            doc.setDrawColor(200, 200, 200); // Gris claro
+            doc.setLineWidth(0.5); // Línea fina
+            doc.rect(labelX + 1, labelY + 1, labelWidth - 2, labelHeight - 2);
+            
             console.log(`Etiqueta ${startIndex + i + 1} en posición (${row}, ${col}): (${labelX}, ${labelY})`);
             
             // Debug: mostrar los valores que se están procesando
