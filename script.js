@@ -25,20 +25,59 @@ let LABEL_CONFIG = {
     ]
 };
 
-// Función para calcular el tamaño adaptativo del QR (Nueva tabla específica)
+// Función para calcular el tamaño adaptativo del QR considerando el tamaño de la etiqueta
 function calculateQRSize(textLength) {
-    const sizes = LABEL_CONFIG.qrSizes;
+    // Calcular el tamaño máximo del QR basado en el área disponible
+    const qrAreaWidth = LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2);
+    const qrAreaHeight = LABEL_CONFIG.qrHeight - (LABEL_CONFIG.margin * 2);
     
-    // Buscar el rango apropiado según la longitud del texto
-    for (let i = 0; i < sizes.length; i++) {
-        const range = sizes[i];
-        if (textLength >= range.minChars && textLength < range.maxChars) {
-            return range;
-        }
+    // El QR debe ser cuadrado, así que usar el lado más pequeño del área disponible
+    const maxQRSide = Math.min(qrAreaWidth, qrAreaHeight);
+    
+    // Calcular el tamaño base del QR (en dots)
+    // Un QR típico tiene un tamaño mínimo de módulos según la versión
+    const baseQRSize = Math.max(15, Math.floor(maxQRSide / 8)); // 8 dots por módulo QR
+    
+    // Ajustar según la longitud del texto (más texto = QR más pequeño)
+    let adjustedSize = baseQRSize;
+    
+    if (textLength > 80) {
+        adjustedSize = Math.floor(baseQRSize * 0.6); // 60% del tamaño máximo
+    } else if (textLength > 60) {
+        adjustedSize = Math.floor(baseQRSize * 0.7); // 70% del tamaño máximo
+    } else if (textLength > 40) {
+        adjustedSize = Math.floor(baseQRSize * 0.8); // 80% del tamaño máximo
+    } else if (textLength > 20) {
+        adjustedSize = Math.floor(baseQRSize * 0.9); // 90% del tamaño máximo
     }
     
-    // Si no encuentra rango, usar el último (más pequeño)
-    return sizes[sizes.length - 1];
+    // Asegurar que el tamaño esté en el rango válido para ZPL (1-99)
+    const finalSize = Math.max(1, Math.min(99, adjustedSize));
+    
+    // Determinar el nombre del tamaño
+    let sizeName = 'Mediano';
+    if (finalSize >= 30) {
+        sizeName = 'Extra Extra Grande';
+    } else if (finalSize >= 25) {
+        sizeName = 'Extra Grande';
+    } else if (finalSize >= 20) {
+        sizeName = 'Muy Grande';
+    } else if (finalSize >= 15) {
+        sizeName = 'Grande';
+    } else if (finalSize >= 10) {
+        sizeName = 'Mediano';
+    } else {
+        sizeName = 'Pequeño';
+    }
+    
+    return {
+        magnification: finalSize,
+        name: sizeName,
+        calculatedSize: finalSize,
+        maxPossibleSize: baseQRSize,
+        areaWidth: qrAreaWidth,
+        areaHeight: qrAreaHeight
+    };
 }
 
 // Referencias a elementos del DOM
@@ -57,6 +96,9 @@ const labelHeight = document.getElementById('labelHeight');
 const dpiSetting = document.getElementById('dpiSetting');
 const sizeInfo = document.getElementById('sizeInfo');
 const footerSize = document.getElementById('footerSize');
+const qrInfo = document.getElementById('qrInfo');
+const qrAreaInfo = document.getElementById('qrAreaInfo');
+const qrMaxInfo = document.getElementById('qrMaxInfo');
 
 // Referencias para CSV
 const csvFile = document.getElementById('csvFile');
@@ -149,6 +191,22 @@ function updateSizeInfo() {
     
     sizeInfo.textContent = sizeText;
     footerSize.textContent = footerText;
+    
+    // Actualizar información del QR
+    const qrAreaWidth = LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2);
+    const qrAreaHeight = LABEL_CONFIG.qrHeight - (LABEL_CONFIG.margin * 2);
+    const maxQRSide = Math.min(qrAreaWidth, qrAreaHeight);
+    const baseQRSize = Math.max(15, Math.floor(maxQRSide / 8));
+    
+    qrAreaInfo.textContent = `${qrAreaWidth}×${qrAreaHeight} dots`;
+    qrMaxInfo.textContent = `${baseQRSize} dots`;
+    
+    // Mostrar información del QR si hay texto
+    if (textInput.value.trim()) {
+        qrInfo.style.display = 'block';
+    } else {
+        qrInfo.style.display = 'none';
+    }
 }
 
 function updateCharCounter() {
@@ -163,10 +221,12 @@ function updateCharCounter() {
     const longestLineLength = longestLine.length;
     const qrConfig = calculateQRSize(longestLineLength);
     
-    // Usar el nombre directamente de la configuración
+    // Mostrar información detallada del QR
     const sizeName = qrConfig.name;
+    const qrSize = qrConfig.calculatedSize;
+    const maxSize = qrConfig.maxPossibleSize;
     
-    charCount.innerHTML = `${totalLength}/100 caracteres total<br><small>QR: ${sizeName} (línea más larga: ${longestLineLength} chars)</small>`;
+    charCount.innerHTML = `${totalLength}/100 caracteres total<br><small>QR: ${sizeName} (${qrSize}/${maxSize} dots, línea más larga: ${longestLineLength} chars)</small>`;
     
     // Cambiar color según la proximidad al límite (basado en la línea más larga)
     if (longestLineLength > 80) {
@@ -176,6 +236,9 @@ function updateCharCounter() {
     } else {
         charCount.style.color = '#666';
     }
+    
+    // Actualizar información del QR en la sección de configuración
+    updateSizeInfo();
 }
 
 function generateLabel() {

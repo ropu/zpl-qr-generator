@@ -101,6 +101,17 @@ main {
     font-style: italic;
 }
 
+.qr-info {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.qr-info small {
+    display: block;
+    line-height: 1.4;
+}
+
 .input-section {
     margin-bottom: 30px;
 }
