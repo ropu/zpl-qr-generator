@@ -98,17 +98,15 @@ function calculateQRSize(textLength) {
     };
 }
 
-// Referencias a elementos del DOM
+// Elementos del DOM
 const textInput = document.getElementById('textInput');
-const charCount = document.getElementById('charCount');
 const generateBtn = document.getElementById('generateBtn');
-const outputSection = document.getElementById('outputSection');
 const zplOutput = document.getElementById('zplOutput');
+const outputSection = document.getElementById('outputSection');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
-
-// Referencias para configuración de tamaño
+const charCount = document.getElementById('charCount');
 const labelWidth = document.getElementById('labelWidth');
 const labelHeight = document.getElementById('labelHeight');
 const dpiSetting = document.getElementById('dpiSetting');
@@ -118,7 +116,7 @@ const qrInfo = document.getElementById('qrInfo');
 const qrAreaInfo = document.getElementById('qrAreaInfo');
 const qrMaxInfo = document.getElementById('qrMaxInfo');
 
-// Referencias para CSV
+// Elementos CSV
 const csvFile = document.getElementById('csvFile');
 const selectCsvBtn = document.getElementById('selectCsvBtn');
 const csvFileName = document.getElementById('csvFileName');
@@ -126,6 +124,11 @@ const csvOptions = document.getElementById('csvOptions');
 const skipHeader = document.getElementById('skipHeader');
 const csvPreview = document.getElementById('csvPreview');
 const generateCsvBtn = document.getElementById('generateCsvBtn');
+
+// Elementos de configuración del PDF
+const pdfRows = document.getElementById('pdfRows');
+const pdfCols = document.getElementById('pdfCols');
+const layoutInfo = document.getElementById('layoutInfo');
 
 // Variables globales para CSV
 let csvData = null;
@@ -173,6 +176,13 @@ function setupEventListeners() {
     csvFile.addEventListener('change', handleCsvFileSelect);
     skipHeader.addEventListener('change', updateCsvPreview);
     generateCsvBtn.addEventListener('click', generateFromCsv);
+
+    // Event listeners para configuración del PDF
+    pdfRows.addEventListener('input', updateLayoutInfo);
+    pdfCols.addEventListener('input', updateLayoutInfo);
+    
+    // Inicializar información del layout
+    updateLayoutInfo();
 }
 
 function updateLabelConfig() {
@@ -200,31 +210,22 @@ function updateLabelConfig() {
 }
 
 function updateSizeInfo() {
-    const width = parseInt(labelWidth.value);
-    const height = parseInt(labelHeight.value);
+    const widthInDots = LABEL_CONFIG.width;
+    const heightInDots = LABEL_CONFIG.height;
+    const widthInMm = parseInt(labelWidth.value);
+    const heightInMm = parseInt(labelHeight.value);
     const dpi = parseInt(dpiSetting.value);
     
-    const sizeText = `Tamaño en dots: ${LABEL_CONFIG.width}×${LABEL_CONFIG.height}`;
-    const footerText = `${width}×${height}mm (${LABEL_CONFIG.width}×${LABEL_CONFIG.height} dots a ${dpi} DPI)`;
+    sizeInfo.textContent = `Tamaño en dots: ${widthInDots}×${heightInDots}`;
+    footerSize.textContent = `${widthInMm}×${heightInMm}mm (${widthInDots}×${heightInDots} dots a ${dpi} DPI)`;
+}
+
+function updateLayoutInfo() {
+    const rows = parseInt(pdfRows.value);
+    const cols = parseInt(pdfCols.value);
+    const totalLabels = rows * cols;
     
-    sizeInfo.textContent = sizeText;
-    footerSize.textContent = footerText;
-    
-    // Actualizar información del QR
-    const qrAreaWidth = LABEL_CONFIG.width - (LABEL_CONFIG.margin * 2);
-    const qrAreaHeight = LABEL_CONFIG.qrHeight - (LABEL_CONFIG.margin * 2);
-    const maxQRSide = Math.min(qrAreaWidth, qrAreaHeight);
-    const baseQRSize = Math.max(15, Math.floor(maxQRSide / 8));
-    
-    qrAreaInfo.textContent = `${qrAreaWidth}×${qrAreaHeight} dots`;
-    qrMaxInfo.textContent = `${baseQRSize} dots`;
-    
-    // Mostrar información del QR si hay texto
-    if (textInput.value.trim()) {
-        qrInfo.style.display = 'block';
-    } else {
-        qrInfo.style.display = 'none';
-    }
+    layoutInfo.textContent = `Formato: ${rows}×${cols} (${totalLabels} etiqueta${totalLabels > 1 ? 's' : ''} por página)`;
 }
 
 function updateCharCounter() {
@@ -618,66 +619,113 @@ async function generatePdfContent(doc) {
         return;
     }
 
-    for (let i = 0; i < labelsData.length; i++) {
-        if (i > 0) doc.addPage();
-        
-        // Debug: mostrar los valores que se están procesando
-        console.log(`PDF - Etiqueta ${i + 1}:`, {
-            text: `"${labelsData[i].text}"`,
-            qrValue: `"${labelsData[i].qrValue}"`
-        });
-        
-        // Texto centrado arriba
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 0);
-        doc.text(labelsData[i].text, 50, 20, { align: 'center' });
+    // Obtener configuración del layout
+    const rowsPerPage = parseInt(pdfRows.value);
+    const colsPerPage = parseInt(pdfCols.value);
+    const labelsPerPage = rowsPerPage * colsPerPage;
+    
+    console.log(`Configuración PDF: ${rowsPerPage}×${colsPerPage} = ${labelsPerPage} etiquetas por página`);
 
-        // Generar QR y agregarlo centrado
-        const qrCanvas = document.createElement('canvas');
+    // Calcular dimensiones de cada etiqueta en la página
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const labelWidth = pageWidth / colsPerPage;
+    const labelHeight = pageHeight / rowsPerPage;
+    
+    console.log(`Dimensiones de página: ${pageWidth}×${pageHeight}mm`);
+    console.log(`Dimensiones de etiqueta: ${labelWidth}×${labelHeight}mm`);
+
+    // Calcular dimensiones del texto y QR para cada etiqueta
+    const textHeight = labelHeight * 0.2; // 20% para texto
+    const qrSize = Math.min(labelWidth * 0.6, labelHeight * 0.6); // 60% del lado más pequeño
+    const textFontSize = Math.max(8, Math.min(16, textHeight * 0.4)); // Tamaño de fuente adaptativo
+    
+    console.log(`Dimensiones internas - Texto: ${textHeight}mm, QR: ${qrSize}×${qrSize}mm, Fuente: ${textFontSize}pt`);
+
+    // Generar páginas
+    for (let pageIndex = 0; pageIndex < Math.ceil(labelsData.length / labelsPerPage); pageIndex++) {
+        if (pageIndex > 0) doc.addPage();
         
-        try {
-            // Limpiar el valor del QR para asegurar que no tenga caracteres extra
-            const qrValue = labelsData[i].qrValue.trim();
-            console.log('Intentando generar QR para:', qrValue);
-            console.log('QRCode disponible:', typeof window.QRCode !== 'undefined');
+        const startIndex = pageIndex * labelsPerPage;
+        const endIndex = Math.min(startIndex + labelsPerPage, labelsData.length);
+        const pageLabels = labelsData.slice(startIndex, endIndex);
+        
+        console.log(`Generando página ${pageIndex + 1}: etiquetas ${startIndex + 1} a ${endIndex}`);
+
+        // Generar etiquetas en esta página
+        for (let i = 0; i < pageLabels.length; i++) {
+            const labelData = pageLabels[i];
+            const row = Math.floor(i / colsPerPage);
+            const col = i % colsPerPage;
             
-            if (typeof window.QRCode !== 'undefined') {
-                console.log('Generando QR real...');
-                await new Promise((resolve, reject) => {
-                    window.QRCode.toCanvas(qrCanvas, qrValue, {
-                        width: 80,
-                        margin: 1
-                    }, function (error) {
-                        if (error) {
-                            console.error('Error en QRCode.toCanvas:', error);
-                            reject(error);
-                        } else {
-                            console.log('QR generado exitosamente para:', qrValue);
-                            resolve();
-                        }
+            // Calcular posición de la etiqueta en la página
+            const labelX = col * labelWidth;
+            const labelY = row * labelHeight;
+            
+            console.log(`Etiqueta ${startIndex + i + 1} en posición (${row}, ${col}): (${labelX}, ${labelY})`);
+            
+            // Debug: mostrar los valores que se están procesando
+            console.log(`PDF - Etiqueta ${startIndex + i + 1}:`, {
+                text: `"${labelData.text}"`,
+                qrValue: `"${labelData.qrValue}"`
+            });
+            
+            // Texto centrado en la parte superior de la etiqueta
+            doc.setFontSize(textFontSize);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 0);
+            const textX = labelX + (labelWidth / 2);
+            const textY = labelY + (textHeight / 2);
+            doc.text(labelData.text, textX, textY, { align: 'center' });
+
+            // Generar QR y agregarlo centrado en la parte inferior
+            const qrCanvas = document.createElement('canvas');
+            
+            try {
+                // Limpiar el valor del QR para asegurar que no tenga caracteres extra
+                const qrValue = labelData.qrValue.trim();
+                console.log('Intentando generar QR para:', qrValue);
+                console.log('QRCode disponible:', typeof window.QRCode !== 'undefined');
+                
+                if (typeof window.QRCode !== 'undefined') {
+                    console.log('Generando QR real...');
+                    await new Promise((resolve, reject) => {
+                        window.QRCode.toCanvas(qrCanvas, qrValue, {
+                            width: Math.floor(qrSize * 3), // 3x para mejor resolución
+                            margin: 1
+                        }, function (error) {
+                            if (error) {
+                                console.error('Error en QRCode.toCanvas:', error);
+                                reject(error);
+                            } else {
+                                console.log('QR generado exitosamente para:', qrValue);
+                                resolve();
+                            }
+                        });
                     });
-                });
-            } else {
-                console.log('QRCode no disponible, usando placeholder');
-                // Fallback si QRCode no está disponible
-                drawQRPlaceholder(qrCanvas, 80, qrValue);
+                } else {
+                    console.log('QRCode no disponible, usando placeholder');
+                    // Fallback si QRCode no está disponible
+                    drawQRPlaceholder(qrCanvas, Math.floor(qrSize * 3), qrValue);
+                }
+            } catch (error) {
+                console.error('Error generando QR:', error);
+                // Fallback si hay error
+                drawQRPlaceholder(qrCanvas, Math.floor(qrSize * 3), labelData.qrValue.trim());
             }
-        } catch (error) {
-            console.error('Error generando QR:', error);
-            // Fallback si hay error
-            drawQRPlaceholder(qrCanvas, 80, labelsData[i].qrValue.trim());
+            
+            const imgData = qrCanvas.toDataURL('image/png');
+            const qrX = labelX + (labelWidth - qrSize) / 2;
+            const qrY = labelY + textHeight + (labelHeight - textHeight - qrSize) / 2;
+            doc.addImage(imgData, 'PNG', qrX, qrY, qrSize, qrSize);
         }
-        
-        const imgData = qrCanvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 10, 35, 80, 80); // centrado en la página
     }
 
     // Generar nombre del archivo
     let filename = 'etiquetas.pdf';
     if (csvData && csvFileName.textContent) {
         const csvName = csvFileName.textContent.replace('.csv', '');
-        filename = `etiquetas_${csvName}_${labelsData.length}_elementos.pdf`;
+        filename = `etiquetas_${csvName}_${labelsData.length}_elementos_${rowsPerPage}x${colsPerPage}.pdf`;
     } else {
         const text = textInput.value.trim();
         const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -686,9 +734,9 @@ async function generatePdfContent(doc) {
                 .replace(/[^a-zA-Z0-9\s]/g, '')
                 .replace(/\s+/g, '_')
                 .substring(0, 20);
-            filename = `etiqueta_${sanitizedText}.pdf`;
+            filename = `etiqueta_${sanitizedText}_${rowsPerPage}x${colsPerPage}.pdf`;
         } else {
-            filename = `etiquetas_${lines.length}_elementos.pdf`;
+            filename = `etiquetas_${lines.length}_elementos_${rowsPerPage}x${colsPerPage}.pdf`;
         }
     }
 
