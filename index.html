@@ -29,6 +29,31 @@
         </header>
 
         <main>
+            <div class="config-section">
+                <h3>⚙️ Configuración de Tamaño</h3>
+                <div class="size-config">
+                    <div class="size-input">
+                        <label for="labelWidth">Ancho (mm):</label>
+                        <input type="number" id="labelWidth" value="100" min="20" max="200" step="1">
+                    </div>
+                    <div class="size-input">
+                        <label for="labelHeight">Alto (mm):</label>
+                        <input type="number" id="labelHeight" value="150" min="20" max="300" step="1">
+                    </div>
+                    <div class="size-input">
+                        <label for="dpiSetting">DPI:</label>
+                        <select id="dpiSetting">
+                            <option value="203">203 DPI (Estándar)</option>
+                            <option value="300">300 DPI (Alta resolución)</option>
+                            <option value="152">152 DPI (Baja resolución)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="size-info">
+                    <span id="sizeInfo">Tamaño en dots: 800×1200</span>
+                </div>
+            </div>
+
             <div class="input-section">
                 <label for="textInput">Texto para la etiqueta:</label>
                 <textarea 
@@ -101,7 +126,7 @@
             <div class="specs">
                 <h4>Especificaciones de la Etiqueta</h4>
                 <ul>
-                    <li>📏 Tamaño: 100×150mm (800×1200 dots a 203 DPI)</li>
+                    <li>📏 Tamaño: <span id="footerSize">100×150mm (800×1200 dots a 203 DPI)</span></li>
                     <li>📝 Texto: 20% superior, centrado</li>
                     <li>📱 Código QR: 80% inferior</li>
                     <li>🖨️ Compatible con impresoras Zebra ZPL</li>

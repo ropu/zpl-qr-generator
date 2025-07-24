@@ -1,5 +1,5 @@
 // Configuración de la etiqueta
-const LABEL_CONFIG = {
+let LABEL_CONFIG = {
     // Dimensiones en dots para 203 DPI (8 dots/mm)
     width: 800,    // 100mm × 8 dots/mm
     height: 1200,  // 150mm × 8 dots/mm
@@ -51,6 +51,13 @@ const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
 
+// Referencias para configuración de tamaño
+const labelWidth = document.getElementById('labelWidth');
+const labelHeight = document.getElementById('labelHeight');
+const dpiSetting = document.getElementById('dpiSetting');
+const sizeInfo = document.getElementById('sizeInfo');
+const footerSize = document.getElementById('footerSize');
+
 // Referencias para CSV
 const csvFile = document.getElementById('csvFile');
 const selectCsvBtn = document.getElementById('selectCsvBtn');
@@ -69,6 +76,7 @@ let currentZplCode = '';
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
+    updateLabelConfig(); // Inicializar configuración de tamaño
     updateCharCounter();
 });
 
@@ -95,11 +103,52 @@ function setupEventListeners() {
         }
     });
     
+    // Event listeners para configuración de tamaño
+    labelWidth.addEventListener('input', updateLabelConfig);
+    labelHeight.addEventListener('input', updateLabelConfig);
+    dpiSetting.addEventListener('change', updateLabelConfig);
+    
     // Event listeners para CSV
     selectCsvBtn.addEventListener('click', () => csvFile.click());
     csvFile.addEventListener('change', handleCsvFileSelect);
     skipHeader.addEventListener('change', updateCsvPreview);
     generateCsvBtn.addEventListener('click', generateFromCsv);
+}
+
+function updateLabelConfig() {
+    const width = parseInt(labelWidth.value);
+    const height = parseInt(labelHeight.value);
+    const dpi = parseInt(dpiSetting.value);
+    
+    // Calcular dots por mm
+    const dotsPerMm = dpi / 25.4; // 25.4 mm = 1 inch
+    
+    // Actualizar configuración
+    LABEL_CONFIG.width = Math.round(width * dotsPerMm);
+    LABEL_CONFIG.height = Math.round(height * dotsPerMm);
+    LABEL_CONFIG.textHeight = Math.round(LABEL_CONFIG.height * 0.2); // 20% superior
+    LABEL_CONFIG.qrHeight = LABEL_CONFIG.height - LABEL_CONFIG.textHeight; // 80% inferior
+    
+    // Ajustar margen según el tamaño
+    LABEL_CONFIG.margin = Math.round(Math.min(width, height) * dotsPerMm * 0.05); // 5% del lado más pequeño
+    
+    // Ajustar tamaño de fuente según el ancho
+    LABEL_CONFIG.fontSize = Math.round(LABEL_CONFIG.width * 0.075); // 7.5% del ancho
+    
+    // Actualizar información visual
+    updateSizeInfo();
+}
+
+function updateSizeInfo() {
+    const width = parseInt(labelWidth.value);
+    const height = parseInt(labelHeight.value);
+    const dpi = parseInt(dpiSetting.value);
+    
+    const sizeText = `Tamaño en dots: ${LABEL_CONFIG.width}×${LABEL_CONFIG.height}`;
+    const footerText = `${width}×${height}mm (${LABEL_CONFIG.width}×${LABEL_CONFIG.height} dots a ${dpi} DPI)`;
+    
+    sizeInfo.textContent = sizeText;
+    footerSize.textContent = footerText;
 }
 
 function updateCharCounter() {

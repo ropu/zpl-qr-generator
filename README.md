@@ -13,7 +13,8 @@ Un generador web completo para crear etiquetas ZPL con texto y códigos QR, comp
 
 ## 📋 Especificaciones
 
-- **Tamaño de etiqueta**: 100×150mm (800×1200 dots a 203 DPI)
+- **Tamaño de etiqueta**: Configurable (20×20mm a 200×300mm)
+- **DPI soportados**: 152, 203 (estándar), 300 DPI
 - **Formato de texto**: 20% superior, centrado
 - **Código QR**: 80% inferior, centrado
 - **Compatibilidad**: Impresoras Zebra ZPL
@@ -22,9 +23,10 @@ Un generador web completo para crear etiquetas ZPL con texto y códigos QR, comp
 
 ### 1. Generación manual
 1. Abre `index.html` en tu navegador
-2. Ingresa el texto en el campo de entrada
-3. Haz clic en "Generar Etiqueta ZPL"
-4. Descarga el archivo .zpl o exporta a PDF
+2. Configura el tamaño de la etiqueta (ancho, alto y DPI)
+3. Ingresa el texto en el campo de entrada
+4. Haz clic en "Generar Etiqueta ZPL"
+5. Descarga el archivo .zpl o exporta a PDF
 
 ### 2. Procesamiento de CSV
 1. Haz clic en "Seleccionar archivo CSV"
@@ -84,6 +86,19 @@ cd zpl-qr-generator
 No se requieren dependencias adicionales - todas las librerías están incluidas localmente.
 
 ## 🔧 Configuración
+
+### Configuración de Tamaño de Etiqueta
+
+El generador permite configurar el tamaño de las etiquetas según tus necesidades:
+
+- **Ancho**: 20mm a 200mm
+- **Alto**: 20mm a 300mm  
+- **DPI**: 152, 203 (estándar), 300 DPI
+
+Los cálculos se realizan automáticamente:
+- **Dots por mm**: `DPI ÷ 25.4`
+- **Margen**: 5% del lado más pequeño
+- **Tamaño de fuente**: 7.5% del ancho de la etiqueta
 
 ### Tamaños de QR adaptativos
 Los códigos QR se ajustan automáticamente según la longitud del texto:
