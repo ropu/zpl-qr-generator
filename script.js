@@ -627,6 +627,7 @@ async function generatePdfContent(doc) {
     }
 
     // Obtener configuración del layout
+    const orientation = pdfOrientation.value;
     const colsPerPage = parseInt(pdfCols.value);
     const rowsPerPage = parseInt(pdfRows.value);
     const labelsPerPage = colsPerPage * rowsPerPage;
@@ -644,7 +645,7 @@ async function generatePdfContent(doc) {
 
     // Calcular dimensiones del texto y QR para cada etiqueta
     const textHeight = labelHeight * 0.2; // 20% para texto
-    const qrSize = Math.min(labelWidth * 0.6, labelHeight * 0.6); // 60% del lado más pequeño
+    const qrSize = Math.min(labelWidth * 0.9, labelHeight * 0.7); // 90% del ancho, 70% de la altura
     
     console.log(`Dimensiones internas - Texto: ${textHeight}mm, QR: ${qrSize}×${qrSize}mm`);
 
