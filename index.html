@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Etiquetas ZPL</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="jsPDF.umd.min.js"></script>
+    <script src="jspdf.plugin.autotable.min.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script>
+        // Verificar que las librerías se carguen correctamente
+        console.log('Verificando carga de librerías...');
+        console.log('jsPDF cargado:', typeof window.jsPDF !== 'undefined');
+        console.log('QRCode cargado:', typeof window.QRCode !== 'undefined');
+        
+        // Si jsPDF no está en window.jsPDF, intentar window.jspdf
+        if (typeof window.jsPDF === 'undefined' && typeof window.jspdf !== 'undefined') {
+            window.jsPDF = window.jspdf;
+            console.log('jsPDF movido a window.jsPDF desde window.jspdf');
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏷️ Generador de Etiquetas ZPL</h1>
+            <p>Crea etiquetas ZPL de 100×150mm con texto y código QR</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <label for="textInput">Texto para la etiqueta:</label>
+                <textarea 
+                    id="textInput" 
+                    placeholder="Ingresa el texto que aparecerá en la etiqueta..."
+                    rows="3"
+                    maxlength="100"
+                ></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span>/100 caracteres
+                </div>
+            </div>
+
+            <div class="csv-section">
+                <h3>📁 Procesar archivo CSV</h3>
+                <div class="csv-input">
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                    <button id="selectCsvBtn" class="csv-btn">
+                        <span class="btn-icon">📁</span>
+                        Seleccionar archivo CSV
+                    </button>
+                    <span id="csvFileName" class="csv-filename"></span>
+                </div>
+                <div class="csv-options" id="csvOptions" style="display: none;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="skipHeader" checked>
+                        <span class="checkmark"></span>
+                        Ignorar primera fila (títulos de columnas)
+                    </label>
+                    <div class="csv-preview" id="csvPreview"></div>
+                </div>
+            </div>
+
+            <div class="button-section">
+                <button id="generateBtn" class="generate-btn">
+                    <span class="btn-icon">⚡</span>
+                    Generar Etiqueta ZPL
+                </button>
+                <button id="generateCsvBtn" class="generate-btn csv-generate-btn" style="display: none;">
+                    <span class="btn-icon">📊</span>
+                    Generar desde CSV
+                </button>
+            </div>
+
+
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h3>Código ZPL Generado</h3>
+                <div class="code-container">
+                    <pre id="zplOutput"></pre>
+                    <button id="copyBtn" class="copy-btn">
+                        <span class="btn-icon">📋</span>
+                        Copiar Código
+                    </button>
+                </div>
+                <div class="download-section">
+                    <button id="downloadBtn" class="download-btn">
+                        <span class="btn-icon">💾</span>
+                        Descargar como .zpl
+                    </button>
+                    <button id="exportPdfBtn" class="download-btn pdf-btn">
+                        <span class="btn-icon">📄</span>
+                        Exportar a PDF
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="specs">
+                <h4>Especificaciones de la Etiqueta</h4>
+                <ul>
+                    <li>📏 Tamaño: 100×150mm (800×1200 dots a 203 DPI)</li>
+                    <li>📝 Texto: 20% superior, centrado</li>
+                    <li>📱 Código QR: 80% inferior</li>
+                    <li>🖨️ Compatible con impresoras Zebra ZPL</li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
