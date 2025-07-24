@@ -221,11 +221,11 @@ function updateSizeInfo() {
 }
 
 function updateLayoutInfo() {
-    const rows = parseInt(pdfRows.value);
     const cols = parseInt(pdfCols.value);
-    const totalLabels = rows * cols;
+    const rows = parseInt(pdfRows.value);
+    const totalLabels = cols * rows;
     
-    layoutInfo.textContent = `Formato: ${rows}×${cols} (${totalLabels} etiqueta${totalLabels > 1 ? 's' : ''} por página)`;
+    layoutInfo.textContent = `Formato: ${cols}×${rows} (${totalLabels} etiqueta${totalLabels > 1 ? 's' : ''} por página)`;
 }
 
 function updateCharCounter() {
@@ -620,11 +620,11 @@ async function generatePdfContent(doc) {
     }
 
     // Obtener configuración del layout
-    const rowsPerPage = parseInt(pdfRows.value);
     const colsPerPage = parseInt(pdfCols.value);
-    const labelsPerPage = rowsPerPage * colsPerPage;
+    const rowsPerPage = parseInt(pdfRows.value);
+    const labelsPerPage = colsPerPage * rowsPerPage;
     
-    console.log(`Configuración PDF: ${rowsPerPage}×${colsPerPage} = ${labelsPerPage} etiquetas por página`);
+    console.log(`Configuración PDF: ${colsPerPage}×${rowsPerPage} = ${labelsPerPage} etiquetas por página`);
 
     // Calcular dimensiones de cada etiqueta en la página
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -725,7 +725,7 @@ async function generatePdfContent(doc) {
     let filename = 'etiquetas.pdf';
     if (csvData && csvFileName.textContent) {
         const csvName = csvFileName.textContent.replace('.csv', '');
-        filename = `etiquetas_${csvName}_${labelsData.length}_elementos_${rowsPerPage}x${colsPerPage}.pdf`;
+        filename = `etiquetas_${csvName}_${labelsData.length}_elementos_${colsPerPage}x${rowsPerPage}.pdf`;
     } else {
         const text = textInput.value.trim();
         const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -734,9 +734,9 @@ async function generatePdfContent(doc) {
                 .replace(/[^a-zA-Z0-9\s]/g, '')
                 .replace(/\s+/g, '_')
                 .substring(0, 20);
-            filename = `etiqueta_${sanitizedText}_${rowsPerPage}x${colsPerPage}.pdf`;
+            filename = `etiqueta_${sanitizedText}_${colsPerPage}x${rowsPerPage}.pdf`;
         } else {
-            filename = `etiquetas_${lines.length}_elementos_${rowsPerPage}x${colsPerPage}.pdf`;
+            filename = `etiquetas_${lines.length}_elementos_${colsPerPage}x${rowsPerPage}.pdf`;
         }
     }
 
